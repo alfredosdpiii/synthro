@@ -1,0 +1,51 @@
+{
+  "source": {
+    "type": "pr",
+    "locator": "sample/octokit/pull/42",
+    "owner": "sample",
+    "repo": "octokit",
+    "number": 42,
+    "url": "https://github.com/sample/octokit/pull/42",
+    "fetchedAt": "2026-06-28T00:00:00.000Z"
+  },
+  "pull": {
+    "title": "Validate retry state before shipping request replay",
+    "html_url": "https://github.com/sample/octokit/pull/42",
+    "updated_at": "2026-06-28T00:00:00.000Z",
+    "labels": [{ "name": "bug" }, { "name": "tests" }]
+  },
+  "files": [
+    {
+      "filename": "src/request/retry.ts",
+      "status": "modified",
+      "additions": 18,
+      "deletions": 4,
+      "patch": "@@ -12,6 +12,13 @@ export function canRetry(request) {\n+  if (!request.retryState) {\n+    return false;\n+  }\n+  if (request.retryState.attempts >= request.retryState.maxAttempts) {\n+    return false;\n+  }\n   return request.method !== 'POST';\n }"
+    },
+    {
+      "filename": "src/request/retry.test.ts",
+      "status": "added",
+      "additions": 28,
+      "deletions": 0,
+      "patch": "@@ -0,0 +1,8 @@\n+test('blocks retry without retry state', () => {\n+  expect(canRetry({ method: 'GET' })).toBe(false);\n+});\n+\n+test('blocks retry after max attempts', () => {\n+  expect(canRetry({ method: 'GET', retryState: { attempts: 3, maxAttempts: 3 } })).toBe(false);\n+});"
+    },
+    {
+      "filename": ".github/workflows/ci.yml",
+      "status": "modified",
+      "additions": 3,
+      "deletions": 1,
+      "patch": "@@ -8,4 +8,6 @@ jobs:\n-  npm test\n+  npm test\n+  npm run typecheck\n+  npm run lint"
+    }
+  ],
+  "commits": [],
+  "reviews": [
+    {
+      "html_url": "https://github.com/sample/octokit/pull/42#pullrequestreview-1",
+      "state": "COMMENTED",
+      "body": "Can we lock the missing retry state behavior with a focused regression test?",
+      "user": { "login": "reviewer" }
+    }
+  ],
+  "comments": [],
+  "reviewComments": []
+}

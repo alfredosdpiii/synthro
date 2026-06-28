@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "synthro": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["src/mcp/server.mjs"],
+      "enabledTools": [
+        "synthro_list_lessons",
+        "synthro_get_lesson_state",
+        "synthro_record_answer",
+        "synthro_synthesize_feedback",
+        "synthro_next_review_items"
+      ]
+    }
+  }
+}

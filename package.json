@@ -1,0 +1,55 @@
+{
+  "name": "synthro",
+  "version": "0.1.0",
+  "description": "Turn GitHub contribution traces into interactive, research-backed HTML lessons.",
+  "type": "module",
+  "private": false,
+  "license": "MIT",
+  "keywords": [
+    "mcp",
+    "github",
+    "education",
+    "worked-examples",
+    "lavish",
+    "ai-agents"
+  ],
+  "homepage": "https://github.com/alfredosdpiii/synthro#readme",
+  "bugs": {
+    "url": "https://github.com/alfredosdpiii/synthro/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/alfredosdpiii/synthro.git"
+  },
+  "files": [
+    "README.md",
+    ".factory/skills/synthro",
+    "scripts",
+    "src",
+    "test/fixtures/sample-pack.json"
+  ],
+  "bin": {
+    "synthro": "scripts/synthro.mjs",
+    "synthro-mcp": "src/mcp/server.mjs"
+  },
+  "scripts": {
+    "build:editor": "node scripts/build-editor-bundle.mjs",
+    "sample": "node scripts/synthro.mjs sample --out dist/synthro-sample.html --no-open",
+    "check:html": "node scripts/check-html.mjs dist/synthro-sample.html",
+    "check:mcp": "node scripts/check-mcp.mjs",
+    "test": "node --test",
+    "check": "npm run build:editor && npm test && npm run sample && npm run check:html && npm run check:mcp"
+  },
+  "dependencies": {
+    "@codemirror/lang-javascript": "^6.2.5",
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "codemirror": "^6.0.2",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.1"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
