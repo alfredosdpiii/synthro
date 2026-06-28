@@ -12,7 +12,7 @@ export function renderExercise(exercise, index) {
   <p>${escapeHtml(exercise.prompt)}</p>
   <div class="editor-shell" data-scaffold="${escapeAttr(exercise.scaffold)}"></div>
   <label class="blank-label">Answer for blank <input class="blank-input" data-blank-id="${escapeAttr(exercise.blanks?.[0]?.id ?? 'blank-1')}" autocomplete="off" /></label>
-  <div class="exercise-actions"><button data-action="judge">Judge answer</button><button data-action="hint">Hint</button></div>
+  <div class="exercise-actions"><button type="button" data-action="judge" onclick="window.SynthroRuntime?.handleButton(this, event)">Judge answer</button><button type="button" data-action="hint" onclick="window.SynthroRuntime?.handleButton(this, event)">Hint</button></div>
   <output class="exercise-feedback"></output>
   <div class="evidence-strip">${evidence}</div>
 </section>`;
@@ -42,7 +42,7 @@ export function renderExercise(exercise, index) {
   </div>
   <p class="checkpoint">${escapeHtml(exercise.checkpoint ?? 'Recall the first solution step.')}</p>
   <div class="choice-grid">${choices}</div>
-  <div class="exercise-actions"><button data-action="judge">Judge recall</button></div>
+  <div class="exercise-actions"><button type="button" data-action="judge" onclick="window.SynthroRuntime?.handleButton(this, event)">Judge recall</button></div>
   <output class="exercise-feedback"></output>
   <div class="evidence-strip">${evidence}</div>
 </section>`;
@@ -56,7 +56,7 @@ export function renderExercise(exercise, index) {
   <h3>${escapeHtml(exercise.title)}</h3>
   <p>${escapeHtml(exercise.prompt)}</p>
   <ol class="sortable">${items}</ol>
-  <div class="exercise-actions"><button data-action="judge">Judge order</button></div>
+  <div class="exercise-actions"><button type="button" data-action="judge" onclick="window.SynthroRuntime?.handleButton(this, event)">Judge order</button></div>
   <output class="exercise-feedback"></output>
   <div class="evidence-strip">${evidence}</div>
 </section>`;
@@ -79,7 +79,7 @@ export function renderExercise(exercise, index) {
   <h3>${escapeHtml(exercise.title)}</h3>
   <p>${escapeHtml(exercise.prompt)}</p>
   <div class="contrast-grid">${cards}</div>
-  <div class="exercise-actions"><button data-action="judge">Judge classification</button></div>
+  <div class="exercise-actions"><button type="button" data-action="judge" onclick="window.SynthroRuntime?.handleButton(this, event)">Judge classification</button></div>
   <output class="exercise-feedback"></output>
   <div class="evidence-strip">${evidence}</div>
 </section>`;
@@ -95,7 +95,7 @@ export function renderExercise(exercise, index) {
   <h3>${escapeHtml(exercise.title)}</h3>
   <p>${escapeHtml(exercise.prompt)}</p>
   <div class="choice-grid">${choices}</div>
-  <div class="exercise-actions"><button data-action="judge">Judge answer</button></div>
+  <div class="exercise-actions"><button type="button" data-action="judge" onclick="window.SynthroRuntime?.handleButton(this, event)">Judge answer</button></div>
   <output class="exercise-feedback"></output>
   <div class="evidence-strip">${evidence}</div>
 </section>`;
@@ -107,8 +107,8 @@ export function renderExercise(exercise, index) {
   <div class="exercise-kicker">Rep ${index + 1} · ${escapeHtml(exercise.research)}</div>
   <h3>${escapeHtml(exercise.title)}</h3>
   <p>${escapeHtml(exercise.prompt)}</p>
-  <div class="trace-grid">${exercise.nodes.map(node => `<button data-node="${escapeAttr(node)}">${escapeHtml(node)}</button>`).join('')}</div>
-  <div class="exercise-actions"><button data-action="judge">Judge node</button></div>
+  <div class="trace-grid">${exercise.nodes.map(node => `<button type="button" data-node="${escapeAttr(node)}" onclick="window.SynthroRuntime?.selectNode(this, event)">${escapeHtml(node)}</button>`).join('')}</div>
+  <div class="exercise-actions"><button type="button" data-action="judge" onclick="window.SynthroRuntime?.handleButton(this, event)">Judge node</button></div>
   <output class="exercise-feedback"></output>
   <div class="evidence-strip">${evidence}</div>
 </section>`;
@@ -122,7 +122,7 @@ export function renderExercise(exercise, index) {
   <p>${escapeHtml(exercise.prompt)}</p>
   ${placeholder}
   <textarea class="free-answer" placeholder="Write your answer..."></textarea>
-  <div class="exercise-actions"><button data-action="judge">Judge response</button></div>
+  <div class="exercise-actions"><button type="button" data-action="judge" onclick="window.SynthroRuntime?.handleButton(this, event)">Judge response</button></div>
   <output class="exercise-feedback"></output>
   <div class="evidence-strip">${evidence}</div>
 </section>`;
@@ -178,7 +178,7 @@ function judge(exercise, answer) {
 function collectAnswer(section, exercise) {
   if (exercise.type === 'code-blanks') {
     const input = section.querySelector('.blank-input');
-    return { [input.dataset.blankId]: input.value };
+    return { [input?.dataset.blankId || 'blank-1']: input?.value || '' };
   }
   if (exercise.type === 'parsons') {
     return { order: [...section.querySelectorAll('.sortable li')].map(item => item.textContent.trim()) };
@@ -195,44 +195,77 @@ function collectAnswer(section, exercise) {
 }
 
 function queueToLavish(exercise, answer, result) {
-  if (!window.lavish?.queuePrompt) return;
-  window.lavish.queuePrompt({
-    queueKey: 'synthro:' + exercise.id,
-    prompt:
-      'Synthro learner answer for ' +
-      exercise.id +
-      '. If the Synthro MCP server is available, call synthro_record_answer with this payload so Droid, Pi, and future agents can synthesize follow-up lessons.\\n' +
-      JSON.stringify({ lessonId: SYNTHRO_LESSON.lessonId, exerciseId: exercise.id, answer, result }, null, 2)
-  });
+  try {
+    if (!window.lavish?.queuePrompt) return;
+    window.lavish.queuePrompt({
+      queueKey: 'synthro:' + exercise.id,
+      prompt:
+        'Synthro learner answer for ' +
+        exercise.id +
+        '. If the Synthro MCP server is available, call synthro_record_answer with this payload so Droid, Pi, and future agents can synthesize follow-up lessons.\\n' +
+        JSON.stringify({ lessonId: SYNTHRO_LESSON.lessonId, exerciseId: exercise.id, answer, result }, null, 2)
+    });
+  } catch (error) {
+    console.warn('Synthro could not queue the answer for Lavish.', error);
+  }
 }
 
 function updateMastery() {
   const scores = Object.values(state.answers).map(item => item.result.score);
   const avg = scores.length ? scores.reduce((a, b) => a + b, 0) / scores.length : 0;
-  document.querySelector('[data-progress-fill]').style.width = Math.round(avg * 100) + '%';
-  document.querySelector('[data-progress-label]').textContent = Math.round(avg * 100) + '% mastery';
+  const fill = document.querySelector('[data-progress-fill]');
+  const label = document.querySelector('[data-progress-label]');
+  if (fill) fill.style.width = Math.round(avg * 100) + '%';
+  if (label) label.textContent = Math.round(avg * 100) + '% mastery';
 }
 
 function initEditors() {
   for (const shell of document.querySelectorAll('.editor-shell')) {
-    window.SynthroEditor.createCodeEditor(shell, shell.dataset.scaffold || '');
+    const scaffold = shell.dataset.scaffold || '';
+    try {
+      if (!window.SynthroEditor?.createCodeEditor) throw new Error('Code editor runtime unavailable');
+      window.SynthroEditor.createCodeEditor(shell, scaffold);
+    } catch (error) {
+      console.warn('Synthro editor fallback activated.', error);
+      const fallback = document.createElement('textarea');
+      fallback.className = 'editor-fallback';
+      fallback.value = scaffold;
+      fallback.setAttribute('aria-label', 'Code scaffold');
+      shell.replaceChildren(fallback);
+    }
   }
 }
 
-function initInteractions() {
-  document.addEventListener('click', event => {
-    const node = event.target.closest('[data-node]');
-    if (node) {
-      node.parentElement.querySelectorAll('[data-node]').forEach(item => item.classList.remove('selected'));
-      node.classList.add('selected');
-    }
-    const button = event.target.closest('[data-action]');
-    if (!button) return;
-    const section = button.closest('.exercise');
+function showFeedback(section, message) {
+  const feedback = section?.querySelector('.exercise-feedback');
+  if (feedback) feedback.textContent = message;
+}
+
+function selectNode(node, event) {
+  if (event) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+  node.parentElement.querySelectorAll('[data-node]').forEach(item => item.classList.remove('selected'));
+  node.classList.add('selected');
+}
+
+function handleButton(button, event) {
+  if (event) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+  const section = button?.closest('.exercise');
+  try {
+    if (!section) return;
     const exercise = SYNTHRO_LESSON.exercises.find(item => item.id === section.dataset.exerciseId);
+    if (!exercise) {
+      showFeedback(section, 'This exercise could not be found. Refresh the lesson and try again.');
+      return;
+    }
     if (button.dataset.action === 'hint') {
       const hint = exercise.blanks?.[0]?.hints?.[0] || 'Look at the evidence anchor.';
-      section.querySelector('.exercise-feedback').textContent = hint;
+      showFeedback(section, hint);
       return;
     }
     const answer = collectAnswer(section, exercise);
@@ -241,8 +274,20 @@ function initInteractions() {
     saveState();
     updateMastery();
     section.dataset.status = result.status;
-    section.querySelector('.exercise-feedback').textContent = result.feedback + ' Score: ' + Math.round(result.score * 100) + '%.';
+    showFeedback(section, result.feedback + ' Score: ' + Math.round(result.score * 100) + '%.');
     queueToLavish(exercise, answer, result);
+  } catch (error) {
+    console.error('Synthro failed to judge the answer.', error);
+    showFeedback(section, 'Synthro hit a browser runtime error. Refresh the lesson and try again.');
+  }
+}
+
+function initInteractions() {
+  document.addEventListener('click', event => {
+    const node = event.target.closest('[data-node]');
+    if (node) selectNode(node, event);
+    const button = event.target.closest('[data-action]');
+    if (button) handleButton(button, event);
   });
 
   document.addEventListener('dragstart', event => {
@@ -261,9 +306,10 @@ function initInteractions() {
   });
 }
 
-initEditors();
+window.SynthroRuntime = { handleButton, selectNode };
 initInteractions();
 updateMastery();
+initEditors();
 `;
 }
 

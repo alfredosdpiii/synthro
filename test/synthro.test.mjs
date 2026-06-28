@@ -79,6 +79,8 @@ test('renders interactive HTML lesson', async () => {
   };
   const html = await renderLessonHtml(lesson);
   assert.match(html, /window\.SYNTHRO_LESSON/);
+  assert.match(html, /window\.SynthroRuntime = \{ handleButton, selectNode \}/);
+  assert.match(html, /onclick="window\.SynthroRuntime\?\.handleButton\(this, event\)"/);
   assert.match(html, /data-exercise-type="code-blanks"/);
   assert.match(html, /solution-steps/);
   assert.match(html, /Near transfer/);

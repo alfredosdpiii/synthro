@@ -164,7 +164,8 @@ button { cursor: pointer; background: var(--accent); color: #10130f; border: 0; 
 .evidence-strip { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
 .evidence-strip span { border: 1px solid var(--line); color: var(--muted); border-radius: 999px; padding: 6px 10px; font: 11px IBM Plex Mono, monospace; }
 .editor-shell, .code-textarea { min-height: 190px; border: 1px solid var(--line); border-radius: 18px; overflow: hidden; background: #070807; }
-.code-textarea { width: 100%; color: #f2f0e8; padding: 18px; font: 14px/1.6 IBM Plex Mono, monospace; }
+.code-textarea, .editor-fallback { width: 100%; color: #f2f0e8; padding: 18px; font: 14px/1.6 IBM Plex Mono, monospace; }
+.editor-fallback { min-height: 190px; border: 0; resize: vertical; }
 .free-answer { width: 100%; min-height: 110px; margin-top: 12px; }
 .cm-editor { min-height: 190px; font: 14px/1.6 IBM Plex Mono, monospace; }
 [data-status="correct"] { border-color: rgba(216,255,105,.7); }
